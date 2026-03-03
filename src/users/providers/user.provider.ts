@@ -27,7 +27,6 @@ export class UserProvider {
         { firstName: { [Op.like]: `%${search}%` } },
         { lastName: { [Op.like]: `%${search}%` } },
         { email: { [Op.like]: `%${search}%` } },
-        { location: { [Op.like]: `%${search}%` } },
       ];
     }
 
