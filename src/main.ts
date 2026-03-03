@@ -34,8 +34,8 @@ async function bootstrap() {
 
   // Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('Qupedia API')
-    .setDescription('The Qupedia API documentation')
+    .setTitle('Deslexia and Desgraphia API')
+    .setDescription('The Deslexia and Desgraphia API documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

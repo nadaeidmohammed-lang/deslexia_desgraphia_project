@@ -44,14 +44,6 @@ export class CreateUserDto {
   lastName: string;
 
   @ApiPropertyOptional({
-    description: 'User phone number',
-    example: '+1234567890',
-  })
-  @IsOptional()
-  @IsString({ message: 'Phone must be a string' })
-  phone?: string;
-
-  @ApiPropertyOptional({
     description: 'User avatar URL',
     example: 'https://example.com/avatar.jpg',
   })
@@ -60,40 +52,12 @@ export class CreateUserDto {
   avatar?: string;
 
   @ApiPropertyOptional({
-    description: 'User location/address',
-    example: 'Cairo, Egypt',
-  })
-  @IsOptional()
-  @IsString()
-  location?: string;
-
-  @ApiPropertyOptional({ description: 'Total number of orders', default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  totalOrders?: number;
-
-  @ApiPropertyOptional({ description: 'Number of favorite stores', default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  favoriteStores?: number;
-
-  @ApiPropertyOptional({ description: 'User rating', default: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  rating?: number;
-
-  @ApiPropertyOptional({
     description: 'User role',
-    enum: ['user', 'admin', 'store_owner'],
-    default: 'user',
+    enum: ['parent', 'admin'],
+    default: 'parent',
   })
   @IsOptional()
-  @IsEnum(['user', 'admin', 'store_owner'], {
-    message: 'Role must be user, admin, or store_owner',
-  })
+  @IsEnum(['parent', 'admin'])
   role?: string;
 
   @ApiPropertyOptional({
