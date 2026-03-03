@@ -43,22 +43,15 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Last name is required' })
   lastName: string;
 
-  @ApiPropertyOptional({
-    description: 'User phone number',
-    example: '+1234567890',
-  })
-  @IsOptional()
-  @IsString({ message: 'Phone must be a string' })
-  phone?: string;
 
   @ApiPropertyOptional({
     description: 'User role',
-    enum: ['user', 'admin', 'store_owner'],
-    default: 'user',
+    enum: ['child', 'admin', 'parent'],
+    default: 'parent',
   })
   @IsOptional()
-  @IsEnum(['user', 'admin', 'store_owner'], {
-    message: 'Role must be user, admin, or store_owner',
+  @IsEnum(['child', 'admin', 'parent'], {
+    message: 'Role must be child, admin, or parent',
   })
   role?: string;
 }
