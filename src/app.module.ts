@@ -8,6 +8,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
 import { CommonModule } from './common/common.module';
+import { ChildrenModule } from './child/child.module';
+import { SubmissionsModule } from './submission/submission.module';
+import { ExercisesModule } from './exercises/exercises.module';
 
 
 @Module({
@@ -25,6 +28,10 @@ import { CommonModule } from './common/common.module';
     UsersModule,
     ChatModule,
     CommonModule,
+    ChildrenModule,
+    SubmissionsModule,
+    ExercisesModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService],
