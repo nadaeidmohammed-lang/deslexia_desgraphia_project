@@ -10,7 +10,15 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
-    "prestart:prod": "npm run build"
+    "prestart:prod": "npm run build",
+    "db:migrate": "npx sequelize-cli db:migrate",
+    "db:migrate:status": "npx sequelize-cli db:migrate:status",
+    "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "db:migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
+    "db:seed": "npx sequelize-cli db:seed:all",
+    "db:seed:undo": "npx sequelize-cli db:seed:undo:all",
+    "migration:generate": "npx sequelize-cli migration:generate --name",
+    "seed:generate": "npx sequelize-cli seed:generate --name"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.894.0",
