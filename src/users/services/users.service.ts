@@ -3,18 +3,23 @@ import { UserProvider } from '../providers/user.provider';
 import { CreateUserDto, UpdateUserDto } from '../dto';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-
+import { generateOtp } from '../../utils/otp.generator';
+import { sendEmailMock } from '../../utils/sendEmail';
 @Injectable()
 export class UsersService {
   constructor(private readonly userProvider: UserProvider) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    return this.userProvider.create(createUserDto);
+    const user = await this.userProvider.create(createUserDto);
+    const otp = generateOtp();
+    user.resetPasswordOtp = otp;
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+    await sendEmailMock(user.email, otp);
+    return user;
   }
 
-  async findAll(queryDto: any = {}) {
-    return this.userProvider.findAll(queryDto);
-  }
+  async findAll(queryDto: any = {}) {}
 
   async findOne(id: number): Promise<User> {
     return this.userProvider.findOne(id);
@@ -61,5 +66,21 @@ export class UsersService {
 
   async findActiveUsers(): Promise<User[]> {
     return this.userProvider.findActiveUsers();
+  }
+  async verifyOtp(email: string, otp: string): Promise<boolean> {
+    const user = await this.userProvider.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (user.resetPasswordOtp !== otp) {
+      throw new Error('Invalid OTP');
+    }
+    if (user.resetPasswordExpires < new Date()) {
+      throw new Error('OTP expired');
+    }
+    user.resetPasswordOtp = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+    return true;
   }
 }

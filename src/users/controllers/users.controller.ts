@@ -21,6 +21,7 @@ import { CreateUserDto, UpdateUserDto } from '../dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles, CurrentUser } from '../../auth/decorators';
+import { VerifyOtpDto } from '../dto/verify-otp.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -113,5 +114,11 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
+  }
+  @Post('verify-otp')
+  async verifyOtp(@Body() body: VerifyOtpDto) {
+    await this.usersService.verifyOtp(body.email, body.otp);
+
+    return { message: 'OTP verified successfully' };
   }
 }

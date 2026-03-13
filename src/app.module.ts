@@ -12,7 +12,6 @@ import { ChildrenModule } from './child/child.module';
 import { SubmissionsModule } from './submission/submission.module';
 import { ExercisesModule } from './exercises/exercises.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,10 +30,8 @@ import { ExercisesModule } from './exercises/exercises.module';
     ChildrenModule,
     SubmissionsModule,
     ExercisesModule,
-    
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
-export class AppModule { }
+export class AppModule {}

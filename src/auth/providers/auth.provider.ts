@@ -36,6 +36,7 @@ export class AuthProvider {
         'lastName',
         'role',
         'isActive',
+        'isEmailVerified',
       ],
     });
   }
@@ -58,6 +59,9 @@ export class AuthProvider {
         'avatar',
         'role',
         'isActive',
+        'resetPasswordOtp',
+        'resetPasswordExpires',
+        'otpAttempts',
       ],
     });
   }
@@ -72,6 +76,7 @@ export class AuthProvider {
 
   async updateLastLogin(userId: number): Promise<void> {
     // Future implementation
+    console.log(userId);
   }
 
   async updatePassword(
@@ -110,7 +115,7 @@ export class AuthProvider {
     expires: Date,
   ): Promise<void> {
     await this.userModel.update(
-      { resetPasswordOtp: otp, resetPasswordExpires: expires },
+      { resetPasswordOtp: otp, resetPasswordExpires: expires, otpAttempts: 0 },
       { where: { id: userId } },
     );
   }

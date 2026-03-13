@@ -89,4 +89,15 @@ export class User extends Model<User> {
   @HasMany(() => Message)
   messages: Message[];
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  isEmailVerified: boolean;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  otpAttempts: number;
 }
