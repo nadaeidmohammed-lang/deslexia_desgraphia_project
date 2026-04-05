@@ -8,14 +8,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ChatService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatService = void 0;
 const common_1 = require("@nestjs/common");
 const chat_provider_1 = require("../providers/chat.provider");
-const create_message_dto_1 = require("../dto/create-message.dto");
-let ChatService = class ChatService {
-    constructor(chatProvider) {
+const groq_sdk_1 = require("groq-sdk");
+const config_1 = require("@nestjs/config");
+let ChatService = ChatService_1 = class ChatService {
+    constructor(chatProvider, configService) {
         this.chatProvider = chatProvider;
+        this.configService = configService;
+        this.logger = new common_1.Logger(ChatService_1.name);
+        const apiKey = this.configService.get('GROQ_API_KEY');
+        if (!apiKey) {
+            this.logger.error('GROQ_API_KEY is missing in .env file!');
+            throw new Error('GROQ_API_KEY is missing or empty');
+        }
+        this.groq = new groq_sdk_1.default({ apiKey });
     }
     async createConversation(createConversationDto, userId) {
         return this.chatProvider.createConversation(createConversationDto, userId);
@@ -59,14 +69,60 @@ let ChatService = class ChatService {
         if (conversation.status === 'archived') {
             throw new common_1.ForbiddenException('Cannot send message to archived conversation');
         }
-        const newMessage = await this.chatProvider.createMessage({
-            conversationId: conversationId,
-            senderId: senderId,
+        const userMessage = await this.chatProvider.createMessage({
+            conversationId,
+            senderId,
             content: createMessageDto.content,
-            type: createMessageDto.type || create_message_dto_1.MessageType.TEXT,
-            metadata: createMessageDto.metadata,
+            type: 'text',
         });
-        return newMessage;
+        const history = await this.chatProvider.findConversationMessages(conversationId, 10);
+        const formattedHistory = history.map(msg => ({
+            role: msg.senderId === senderId ? 'user' : 'assistant',
+            content: msg.content,
+        }));
+        const aiAnalysis = await this.getAiResponse(createMessageDto.content, formattedHistory);
+        const botMessage = await this.chatProvider.createMessage({
+            conversationId,
+            senderId: 0,
+            content: aiAnalysis.reply,
+            type: 'text',
+            metadata: aiAnalysis.feedback,
+        });
+        return botMessage;
+    }
+    async getAiResponse(userContent, history) {
+        const systemPrompt = `
+    You are an AI assistant that helps parents support their children with learning difficulties such as dyslexia and dysgraphia.
+    You must ALWAYS respond with VALID JSON ONLY.
+
+    Response format:
+    {
+     "reply": "A natural Arabic message to the parent",
+     "feedback": {
+       "detected_words": [],
+       "suspected_letter": "",
+       "issue_type": "dyslexia or dysgraphia or none"
+        }
+    }
+
+    Rules:
+    - The "reply" MUST be in Arabic language only.
+    - The "reply" must be a normal, friendly Arabic response to the parent.
+    - Extract words mentioned by the parent that show difficulty.
+    - Detect the most repeated letter causing trouble.
+    - Return ONLY JSON. Do not write any conversational text outside the JSON block.
+  `;
+        const completion = await this.groq.chat.completions.create({
+            messages: [
+                { role: 'system', content: systemPrompt },
+                ...history,
+                { role: 'user', content: userContent },
+            ],
+            model: 'llama-3.1-8b-instant',
+            temperature: 0.2,
+            response_format: { type: "json_object" }
+        });
+        return JSON.parse(completion.choices[0].message.content);
     }
     async getMessages(conversationId, query, userId) {
         if (userId) {
@@ -127,8 +183,9 @@ let ChatService = class ChatService {
     }
 };
 exports.ChatService = ChatService;
-exports.ChatService = ChatService = __decorate([
+exports.ChatService = ChatService = ChatService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [chat_provider_1.ChatProvider])
+    __metadata("design:paramtypes", [chat_provider_1.ChatProvider,
+        config_1.ConfigService])
 ], ChatService);
 //# sourceMappingURL=chat.service.js.map

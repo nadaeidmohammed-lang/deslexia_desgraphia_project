@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { ChatProvider } from '../providers/chat.provider';
 import { Conversation } from '../entities/conversation.entity';
@@ -15,12 +16,27 @@ import {
 import { MessageType } from '../dto/create-message.dto';
 import { PaginationResult } from '../../common/interfaces/pagination';
 import { QueryMessageDto } from '../dto/query-message.dto';
+import Groq from 'groq-sdk';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly chatProvider: ChatProvider) {}
+  private groq: Groq;
+  private readonly logger = new Logger(ChatService.name);
 
+  constructor(
+    private readonly chatProvider: ChatProvider,
+    private readonly configService: ConfigService,
+  ) {
+    const apiKey = this.configService.get<string>('GROQ_API_KEY');
 
+    if (!apiKey) {
+      this.logger.error('GROQ_API_KEY is missing in .env file!');
+      throw new Error('GROQ_API_KEY is missing or empty');
+    }
+
+    this.groq = new Groq({ apiKey });
+  }
   async createConversation(
     createConversationDto: CreateConversationDto,
     userId: number,
@@ -93,20 +109,75 @@ export class ChatService {
     const conversation = await this.getConversation(conversationId, senderId);
 
     if (conversation.status === 'archived') {
-      throw new ForbiddenException(
-        'Cannot send message to archived conversation',
-      );
+      throw new ForbiddenException('Cannot send message to archived conversation');
     }
 
-    const newMessage = await this.chatProvider.createMessage({
-      conversationId: conversationId,
-      senderId: senderId,
+    const userMessage = await this.chatProvider.createMessage({
+      conversationId,
+      senderId,
       content: createMessageDto.content,
-      type: createMessageDto.type || MessageType.TEXT,
-      metadata: createMessageDto.metadata,
+      type: 'text',
     });
 
-    return newMessage;
+    // 2. جلب تاريخ المحادثة (عشان الـ AI يعرف السياق - Restore Context)
+    const history = await this.chatProvider.findConversationMessages(conversationId, 10);
+    const formattedHistory = history.map(msg => ({
+      role: msg.senderId === senderId ? 'user' : 'assistant',
+      content: msg.content,
+    }));
+
+    // 3. استدعاء الـ AI (Groq) للتحليل والرد
+    const aiAnalysis = await this.getAiResponse(createMessageDto.content, formattedHistory);
+
+    // 4. حفظ رد الـ AI في قاعدة البيانات
+    // ملاحظة: الـ metadata ستحتوي على الـ feedback (detected_words, suspected_letter, etc.)
+    const botMessage = await this.chatProvider.createMessage({
+      conversationId,
+      senderId: 0, // أو ID مخصص للبوت
+      content: aiAnalysis.reply,
+      type: 'text',
+      metadata: aiAnalysis.feedback, // هنا نخزن التحليل (الديسليكسيا)
+    });
+
+    return botMessage;
+  }
+
+  // دالة مساعدة للتعامل مع Groq (نفس منطق كود البايثون)
+  private async getAiResponse(userContent: string, history: any[]) {
+    const systemPrompt = `
+    You are an AI assistant that helps parents support their children with learning difficulties such as dyslexia and dysgraphia.
+    You must ALWAYS respond with VALID JSON ONLY.
+
+    Response format:
+    {
+     "reply": "A natural Arabic message to the parent",
+     "feedback": {
+       "detected_words": [],
+       "suspected_letter": "",
+       "issue_type": "dyslexia or dysgraphia or none"
+        }
+    }
+
+    Rules:
+    - The "reply" MUST be in Arabic language only.
+    - The "reply" must be a normal, friendly Arabic response to the parent.
+    - Extract words mentioned by the parent that show difficulty.
+    - Detect the most repeated letter causing trouble.
+    - Return ONLY JSON. Do not write any conversational text outside the JSON block.
+  `;
+
+    const completion = await this.groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...history,
+        { role: 'user', content: userContent },
+      ],
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.2,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(completion.choices[0].message.content);
   }
 
   async getMessages(
@@ -114,7 +185,7 @@ export class ChatService {
     query: QueryMessageDto,
     userId?: number,
   ): Promise<PaginationResult<Message>> {
-    
+
     if (userId) {
       await this.getConversation(conversationId, userId);
     }
@@ -122,7 +193,7 @@ export class ChatService {
     query.conversationId = conversationId;
 
     const { rows, count } = await this.chatProvider.findAllMessages(query);
-    
+
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 50;
 
@@ -169,13 +240,13 @@ export class ChatService {
   async deleteConversation(id: number, userId: number): Promise<void> {
     const conversation = await this.chatProvider.findOneConversation(id);
     if (!conversation) {
-        throw new NotFoundException('Conversation not found');
+      throw new NotFoundException('Conversation not found');
     }
-  
+
     if (conversation.userId !== userId) {
-        throw new ForbiddenException('You do not have permission to delete this conversation');
+      throw new ForbiddenException('You do not have permission to delete this conversation');
     }
-  
+
     await this.chatProvider.deleteConversation(id);
   }
 
