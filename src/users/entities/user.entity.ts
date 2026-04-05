@@ -100,4 +100,16 @@ export class User extends Model<User> {
     defaultValue: 0,
   })
   otpAttempts: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  verificationCode: string;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  verificationExpires: Date;
 }

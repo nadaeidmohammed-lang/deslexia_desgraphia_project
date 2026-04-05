@@ -13,13 +13,14 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const auth_provider_1 = require("../providers/auth.provider");
-const sendEmail_1 = require("../../utils/sendEmail");
+const mail_service_1 = require("../../mail/mail.service");
 const config_1 = require("@nestjs/config");
 let AuthService = class AuthService {
-    constructor(authProvider, jwtService, configService) {
+    constructor(authProvider, jwtService, configService, mailService) {
         this.authProvider = authProvider;
         this.jwtService = jwtService;
         this.configService = configService;
+        this.mailService = mailService;
     }
     async validateUser(email, password) {
         const user = await this.authProvider.validateUser(email, password);
@@ -49,11 +50,11 @@ let AuthService = class AuthService {
             throw new common_1.ConflictException('Email already exists');
         }
         const user = await this.authProvider.createUser(registerDto);
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date();
         expires.setMinutes(expires.getMinutes() + 10);
-        await this.authProvider.saveResetToken(user.id, otp, expires);
-        await (0, sendEmail_1.sendEmailMock)(user.email, otp);
+        await this.authProvider.saveVerificationToken(user.id, otp, expires);
+        await this.mailService.sendVerificationEmail(user.email, otp);
         return {
             message: 'User registered successfully. Please verify your email.',
             devOnlyOtp: otp,
@@ -67,12 +68,12 @@ let AuthService = class AuthService {
         const user = await this.authProvider.findUserByEmail(dto.email);
         if (!user)
             throw new common_1.NotFoundException('User with this email does not exist');
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expirationMinutes = this.configService.get('OTP_EXPIRATION_MINUTES') || 15;
         const expires = new Date();
         expires.setMinutes(expires.getMinutes() + Number(expirationMinutes));
         await this.authProvider.saveResetToken(user.id, otp, expires);
-        await (0, sendEmail_1.sendEmailMock)(user.email, otp);
+        await this.mailService.sendPasswordResetEmail(user.email, otp);
         return {
             message: 'OTP sent to your email successfully',
             devOnlyOtp: otp,
@@ -90,11 +91,27 @@ let AuthService = class AuthService {
         };
     }
     async verifyOtp(email, otp) {
-        const user = await this.authProvider.findUserForReset(email);
+        const user = await this.authProvider.findUserForVerification(email);
         if (!user) {
             throw new common_1.NotFoundException('User not found');
         }
-        await this.validateOtp(user, otp);
+        if (user.otpAttempts >= 5) {
+            throw new common_1.BadRequestException('Too many incorrect OTP attempts');
+        }
+        if (!user.verificationCode) {
+            throw new common_1.BadRequestException('No verification code found');
+        }
+        if (!user.verificationExpires || new Date() > user.verificationExpires) {
+            throw new common_1.BadRequestException('Verification code expired');
+        }
+        if (user.verificationCode !== otp) {
+            user.otpAttempts += 1;
+            await user.save();
+            throw new common_1.BadRequestException('Invalid verification code');
+        }
+        user.verificationCode = null;
+        user.verificationExpires = null;
+        user.otpAttempts = 0;
         user.isEmailVerified = true;
         await user.save();
         return {
@@ -131,11 +148,11 @@ let AuthService = class AuthService {
                 9 * 60 * 1000) {
             throw new common_1.BadRequestException('Please wait before requesting another OTP');
         }
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date();
         expires.setMinutes(expires.getMinutes() + 10);
         await this.authProvider.saveResetToken(user.id, otp, expires);
-        await (0, sendEmail_1.sendEmailMock)(user.email, otp);
+        await this.mailService.sendPasswordResetEmail(user.email, otp);
         return {
             message: 'OTP sent to your email',
         };
@@ -157,6 +174,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [auth_provider_1.AuthProvider,
         jwt_1.JwtService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        mail_service_1.MailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

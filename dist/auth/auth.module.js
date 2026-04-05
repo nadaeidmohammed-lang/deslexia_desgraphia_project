@@ -22,6 +22,7 @@ const roles_guard_1 = require("./guards/roles.guard");
 const users_module_1 = require("../users/users.module");
 const user_entity_1 = require("../users/entities/user.entity");
 const sequelize_1 = require("@nestjs/sequelize");
+const mail_service_1 = require("../mail/mail.service");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -51,6 +52,7 @@ exports.AuthModule = AuthModule = __decorate([
             local_auth_guard_1.LocalAuthGuard,
             jwt_auth_guard_1.JwtAuthGuard,
             roles_guard_1.RolesGuard,
+            mail_service_1.MailService,
         ],
         exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard],
     })

@@ -44,7 +44,14 @@ export class AuthProvider {
   async findUserForReset(email: string): Promise<User> {
     return this.userModel.findOne({
       where: { email },
-      attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires'],
+      attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires', 'otpAttempts'],
+    });
+  }
+
+  async findUserForVerification(email: string): Promise<User> {
+    return this.userModel.findOne({
+      where: { email },
+      attributes: ['id', 'email', 'verificationCode', 'verificationExpires', 'otpAttempts', 'isEmailVerified'],
     });
   }
 
@@ -116,6 +123,17 @@ export class AuthProvider {
   ): Promise<void> {
     await this.userModel.update(
       { resetPasswordOtp: otp, resetPasswordExpires: expires, otpAttempts: 0 },
+      { where: { id: userId } },
+    );
+  }
+
+  async saveVerificationToken(
+    userId: number,
+    code: string,
+    expires: Date,
+  ): Promise<void> {
+    await this.userModel.update(
+      { verificationCode: code, verificationExpires: expires, otpAttempts: 0 },
       { where: { id: userId } },
     );
   }

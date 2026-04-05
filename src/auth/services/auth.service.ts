@@ -11,7 +11,7 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
 } from '../dto/forget-password.dto';
-import { sendEmailMock } from '../../utils/sendEmail';
+import { MailService } from '../../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 
@@ -21,6 +21,7 @@ export class AuthService {
     private readonly authProvider: AuthProvider,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -61,17 +62,17 @@ export class AuthService {
 
     const user = await this.authProvider.createUser(registerDto);
 
-    // Generate OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate OTP (6-digits)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const expires = new Date();
     expires.setMinutes(expires.getMinutes() + 10);
 
     // Save OTP in database
-    await this.authProvider.saveResetToken(user.id, otp, expires);
+    await this.authProvider.saveVerificationToken(user.id, otp, expires);
 
     // Send Email
-    await sendEmailMock(user.email, otp);
+    await this.mailService.sendVerificationEmail(user.email, otp);
 
     return {
       message: 'User registered successfully. Please verify your email.',
@@ -95,8 +96,8 @@ export class AuthService {
     if (!user)
       throw new NotFoundException('User with this email does not exist');
 
-    // 2. Generate OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    // 2. Generate OTP (6-digits)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     //  3. Get Expiration from ENV (Default to 15 if not set)
     const expirationMinutes =
@@ -108,8 +109,8 @@ export class AuthService {
     // 4. Save to DB (using Provider)
     await this.authProvider.saveResetToken(user.id, otp, expires);
 
-    // 5. Send Email (using Utils)
-    await sendEmailMock(user.email, otp);
+    // 5. Send Email
+    await this.mailService.sendPasswordResetEmail(user.email, otp);
 
     return {
       message: 'OTP sent to your email successfully',
@@ -130,13 +131,32 @@ export class AuthService {
   }
 
   async verifyOtp(email: string, otp: string) {
-    const user = await this.authProvider.findUserForReset(email);
+    const user = await this.authProvider.findUserForVerification(email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    await this.validateOtp(user, otp);
+    
+    if (user.otpAttempts >= 5) {
+      throw new BadRequestException('Too many incorrect OTP attempts');
+    }
+    if (!user.verificationCode) {
+      throw new BadRequestException('No verification code found');
+    }
+    if (!user.verificationExpires || new Date() > user.verificationExpires) {
+      throw new BadRequestException('Verification code expired');
+    }
+    if (user.verificationCode !== otp) {
+      user.otpAttempts += 1;
+      await user.save();
+      throw new BadRequestException('Invalid verification code');
+    }
+    
+    user.verificationCode = null;
+    user.verificationExpires = null;
+    user.otpAttempts = 0;
     user.isEmailVerified = true;
     await user.save();
+    
     return {
       message: 'Email verified successfully',
     };
@@ -177,11 +197,11 @@ export class AuthService {
         'Please wait before requesting another OTP',
       );
     }
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date();
     expires.setMinutes(expires.getMinutes() + 10);
     await this.authProvider.saveResetToken(user.id, otp, expires);
-    await sendEmailMock(user.email, otp);
+    await this.mailService.sendPasswordResetEmail(user.email, otp);
     return {
       message: 'OTP sent to your email',
     };

@@ -48,7 +48,13 @@ let AuthProvider = class AuthProvider {
     async findUserForReset(email) {
         return this.userModel.findOne({
             where: { email },
-            attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires'],
+            attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires', 'otpAttempts'],
+        });
+    }
+    async findUserForVerification(email) {
+        return this.userModel.findOne({
+            where: { email },
+            attributes: ['id', 'email', 'verificationCode', 'verificationExpires', 'otpAttempts', 'isEmailVerified'],
         });
     }
     async findUserById(id) {
@@ -96,6 +102,9 @@ let AuthProvider = class AuthProvider {
     }
     async saveResetToken(userId, otp, expires) {
         await this.userModel.update({ resetPasswordOtp: otp, resetPasswordExpires: expires, otpAttempts: 0 }, { where: { id: userId } });
+    }
+    async saveVerificationToken(userId, code, expires) {
+        await this.userModel.update({ verificationCode: code, verificationExpires: expires, otpAttempts: 0 }, { where: { id: userId } });
     }
     async checkEmailExists(email) {
         const user = await this.userModel.findOne({

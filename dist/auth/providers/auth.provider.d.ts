@@ -6,11 +6,13 @@ export declare class AuthProvider {
     createUser(registerDto: RegisterDto): Promise<User>;
     findUserByEmail(email: string): Promise<User>;
     findUserForReset(email: string): Promise<User>;
+    findUserForVerification(email: string): Promise<User>;
     findUserById(id: number): Promise<User>;
     validateUser(email: string, password: string): Promise<User | null>;
     updateLastLogin(userId: number): Promise<void>;
     updatePassword(userId: number, newPassword: string, oldPassword?: string): Promise<void>;
     saveResetToken(userId: number, otp: string, expires: Date): Promise<void>;
+    saveVerificationToken(userId: number, code: string, expires: Date): Promise<void>;
     checkEmailExists(email: string): Promise<boolean>;
     deactivateUser(userId: number): Promise<void>;
     activateUser(userId: number): Promise<void>;

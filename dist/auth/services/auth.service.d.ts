@@ -2,13 +2,15 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthProvider } from '../providers/auth.provider';
 import { ChangePasswordDto, RegisterDto } from '../dto';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dto/forget-password.dto';
+import { MailService } from '../../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 export declare class AuthService {
     private readonly authProvider;
     private readonly jwtService;
     private readonly configService;
-    constructor(authProvider: AuthProvider, jwtService: JwtService, configService: ConfigService);
+    private readonly mailService;
+    constructor(authProvider: AuthProvider, jwtService: JwtService, configService: ConfigService, mailService: MailService);
     validateUser(email: string, password: string): Promise<any>;
     login(user: any): Promise<{
         access_token: string;

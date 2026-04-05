@@ -18,4 +18,6 @@ export declare class User extends Model<User> {
     messages: Message[];
     isEmailVerified: boolean;
     otpAttempts: number;
+    verificationCode: string;
+    verificationExpires: Date;
 }
