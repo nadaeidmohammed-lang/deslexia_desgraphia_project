@@ -27,40 +27,25 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      phone: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
       avatar: {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      location: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      totalOrders: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
-        allowNull: false,
-      },
-      favoriteStores: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
-        allowNull: false,
-      },
-      rating: {
-        type: Sequelize.DECIMAL(3, 2),
-        defaultValue: 0,
-        allowNull: false,
-      },
       role: {
-        type: Sequelize.ENUM('user', 'admin'),
+        type: Sequelize.ENUM('user', 'admin', 'parent'),
         defaultValue: 'user',
       },
       isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
+      },
+      verificationCode: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      verificationExpires: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       resetPasswordOtp: {
         type: Sequelize.STRING,
@@ -70,12 +55,24 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
+      isEmailVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      otpAttempts: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
+        type: Sequelize.DATE,
+      },
+      deletedAt: {
+        allowNull: true,
         type: Sequelize.DATE,
       },
     });

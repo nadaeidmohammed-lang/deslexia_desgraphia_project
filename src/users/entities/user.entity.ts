@@ -54,7 +54,7 @@ export class User extends Model<User> {
   avatar: string;
 
   @Column({
-    type: DataType.ENUM('parent', 'admin'),
+    type: DataType.ENUM('user', 'admin', 'parent'),
     defaultValue: 'parent',
   })
   role: string;
@@ -101,6 +101,7 @@ export class User extends Model<User> {
   })
   otpAttempts: number;
 
+
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -112,4 +113,11 @@ export class User extends Model<User> {
     allowNull: true,
   })
   verificationExpires: Date;
+
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  deletedAt: Date;
 }

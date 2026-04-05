@@ -13,14 +13,13 @@ export class AuthProvider {
   constructor(
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) {}
+  ) { }
 
   async createUser(registerDto: RegisterDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     return this.userModel.create({
       ...registerDto,
       password: hashedPassword,
-      role: 'user',
       isActive: true,
     });
   }

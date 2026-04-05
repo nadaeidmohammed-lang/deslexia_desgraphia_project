@@ -31,8 +31,4 @@ export class CreateMessageDto {
   @IsOptional()
   metadata?: Record<string, any>;
 
-  // @ApiProperty({ description: 'Conversation ID' })
-  // @IsNotEmpty()
-  // @IsString()
-  // conversation_id: string;
 }

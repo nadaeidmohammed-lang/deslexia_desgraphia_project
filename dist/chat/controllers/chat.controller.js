@@ -60,6 +60,9 @@ let ChatController = class ChatController {
         await this.chatService.deleteMessage(id, req.user.userId);
         return { success: true, message: 'Message deleted successfully' };
     }
+    async sendMessage(conversationId, createMessageDto, user) {
+        return this.chatService.sendMessage(createMessageDto, conversationId, user.userId);
+    }
 };
 exports.ChatController = ChatController;
 __decorate([
@@ -171,6 +174,17 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "deleteMessage", null);
+__decorate([
+    (0, common_1.Post)('conversations/:id/messages'),
+    (0, swagger_1.ApiOperation)({ summary: 'Send a message and get AI analysis' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Conversation ID' }),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, decorators_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, dto_1.CreateMessageDto, Object]),
+    __metadata("design:returntype", Promise)
+], ChatController.prototype, "sendMessage", null);
 exports.ChatController = ChatController = __decorate([
     (0, swagger_1.ApiTags)('Chat'),
     (0, swagger_1.ApiBearerAuth)(),

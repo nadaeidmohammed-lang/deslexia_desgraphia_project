@@ -26,7 +26,6 @@ let AuthProvider = class AuthProvider {
         return this.userModel.create({
             ...registerDto,
             password: hashedPassword,
-            role: 'user',
             isActive: true,
         });
     }

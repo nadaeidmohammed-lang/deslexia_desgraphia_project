@@ -1,5 +1,5 @@
 import { ChatService } from '../services/chat.service';
-import { CreateConversationDto, UpdateConversationDto } from '../dto';
+import { CreateConversationDto, CreateMessageDto, UpdateConversationDto } from '../dto';
 export declare class ChatController {
     private readonly chatService;
     constructor(chatService: ChatService);
@@ -22,4 +22,5 @@ export declare class ChatController {
         success: boolean;
         message: string;
     }>;
+    sendMessage(conversationId: number, createMessageDto: CreateMessageDto, user: any): Promise<import("../entities/message.entity").Message>;
 }

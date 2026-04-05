@@ -10,31 +10,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateConversationDto = void 0;
-const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
 class CreateConversationDto {
 }
 exports.CreateConversationDto = CreateConversationDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'User ID for the conversation',
-        example: 1,
-    }),
-    (0, class_validator_1.IsInt)(),
-    __metadata("design:type", Number)
-], CreateConversationDto.prototype, "userId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Store ID for the conversation',
-        example: 1,
-    }),
-    (0, class_validator_1.IsInt)(),
-    __metadata("design:type", Number)
-], CreateConversationDto.prototype, "storeId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
         description: 'Conversation title',
-        example: 'Inquiry about menu',
+        example: 'جلسة تحليل حرف السين',
         required: false,
     }),
     (0, class_validator_1.IsString)(),
@@ -46,7 +30,6 @@ __decorate([
         description: 'Conversation status',
         enum: ['active', 'closed', 'archived'],
         example: 'active',
-        required: false,
         default: 'active',
     }),
     (0, class_validator_1.IsEnum)(['active', 'closed', 'archived']),

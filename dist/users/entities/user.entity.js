@@ -60,7 +60,7 @@ __decorate([
 ], User.prototype, "avatar", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.ENUM('parent', 'admin'),
+        type: sequelize_typescript_1.DataType.ENUM('user', 'admin', 'parent'),
         defaultValue: 'parent',
     }),
     __metadata("design:type", String)
@@ -130,6 +130,13 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], User.prototype, "verificationExpires", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.DATE,
+        allowNull: true,
+    }),
+    __metadata("design:type", Date)
+], User.prototype, "deletedAt", void 0);
 exports.User = User = __decorate([
     (0, sequelize_typescript_1.Table)({
         tableName: 'users',

@@ -34,7 +34,7 @@ import { QueryMessageDto } from '../dto/query-message.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService) { }
 
   @Post('conversations')
   @ApiOperation({ summary: 'Create a new conversation' })
@@ -48,7 +48,7 @@ export class ChatController {
     @Body() createConversationDto: CreateConversationDto,
     @CurrentUser() user,
   ) {
-    console.log('User form Token:', user); 
+    console.log('User form Token:', user);
     return this.chatService.createConversation(
       createConversationDto,
       user.userId,
@@ -80,9 +80,9 @@ export class ChatController {
     @CurrentUser() user?,
   ) {
     const queryDto: QueryMessageDto = {
-        page: page ? Number(page) : 1,
-        limit: limit ? Number(limit) : 50,
-        conversationId: conversationId
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 50,
+      conversationId: conversationId
     };
 
     return this.chatService.getMessages(
@@ -140,7 +140,7 @@ export class ChatController {
     @Param('id', ParseIntPipe) id: number,
     @Request() req,
   ) {
-    await this.chatService.deleteConversation(id,req.user.userId);
+    await this.chatService.deleteConversation(id, req.user.userId);
     return { success: true, message: 'Conversation deleted successfully' };
   }
 
@@ -157,7 +157,22 @@ export class ChatController {
     @Param('id', ParseIntPipe) id: number,
     @Request() req,
   ) {
-    await this.chatService.deleteMessage(id,req.user.userId);
+    await this.chatService.deleteMessage(id, req.user.userId);
     return { success: true, message: 'Message deleted successfully' };
+  }
+  //chat bot
+  @Post('conversations/:id/messages')
+  @ApiOperation({ summary: 'Send a message and get AI analysis' })
+  @ApiParam({ name: 'id', description: 'Conversation ID' })
+  async sendMessage(
+    @Param('id', ParseIntPipe) conversationId: number,
+    @Body() createMessageDto: CreateMessageDto,
+    @CurrentUser() user,
+  ) {
+    return this.chatService.sendMessage(
+      createMessageDto,
+      conversationId,
+      user.userId,
+    );
   }
 }

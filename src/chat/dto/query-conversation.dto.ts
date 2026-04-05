@@ -23,11 +23,6 @@ export class QueryConversationDto extends PaginationDto {
   @IsEnum(['active', 'closed', 'archived'])
   status?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by store ID' })
-  @IsOptional()
-  @IsInt()
-  @Type(() => Number)
-  storeId?: number;
 
   @ApiPropertyOptional({
     description: 'Sort by field',

@@ -32,7 +32,7 @@ let ChatProvider = class ChatProvider {
         });
     }
     async findAllConversations(queryDto) {
-        const { page = 1, limit = 10, search, status, storeId, sortBy = 'lastMessageAt', sortOrder = 'DESC', } = queryDto;
+        const { page = 1, limit = 10, search, status, sortBy = 'lastMessageAt', sortOrder = 'DESC', } = queryDto;
         const offset = (page - 1) * limit;
         const whereClause = {};
         if (search) {
@@ -40,9 +40,6 @@ let ChatProvider = class ChatProvider {
         }
         if (status) {
             whereClause.status = status;
-        }
-        if (storeId) {
-            whereClause.storeId = storeId;
         }
         return this.conversationModel.findAndCountAll({
             where: whereClause,

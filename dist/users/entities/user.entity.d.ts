@@ -20,4 +20,5 @@ export declare class User extends Model<User> {
     otpAttempts: number;
     verificationCode: string;
     verificationExpires: Date;
+    deletedAt: Date;
 }

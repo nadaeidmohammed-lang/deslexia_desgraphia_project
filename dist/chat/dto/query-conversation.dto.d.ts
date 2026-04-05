@@ -10,7 +10,6 @@ export declare enum SortOrder {
 }
 export declare class QueryConversationDto extends PaginationDto {
     status?: string;
-    storeId?: number;
     sortBy?: ConversationSortBy;
     sortOrder?: SortOrder;
 }
