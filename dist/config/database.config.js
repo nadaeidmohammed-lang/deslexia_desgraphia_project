@@ -11,6 +11,11 @@ const databaseConfig = (configService) => ({
     autoLoadModels: true,
     synchronize: true,
     logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+    dialectOptions: {
+        ssl: {
+            rejectUnauthorized: false,
+        },
+    },
 });
 exports.databaseConfig = databaseConfig;
 //# sourceMappingURL=database.config.js.map
