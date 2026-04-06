@@ -9,7 +9,7 @@ const databaseConfig = (configService) => ({
     password: configService.get('DB_PASSWORD'),
     database: configService.get('DB_DATABASE'),
     autoLoadModels: true,
-    synchronize: true,
+    synchronize: false,
     logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
     dialectOptions: {
         ssl: {
