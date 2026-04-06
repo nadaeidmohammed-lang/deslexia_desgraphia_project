@@ -13,6 +13,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { UsersModule } from '../users/users.module';
 import { User } from 'src/users/entities/user.entity';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN')as any,
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN') as any,
         },
       }),
       inject: [ConfigService],
@@ -39,6 +40,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
     LocalAuthGuard,
     JwtAuthGuard,
     RolesGuard,
+    MailService,
   ],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
 })

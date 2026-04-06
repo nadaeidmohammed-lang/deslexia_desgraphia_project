@@ -5,13 +5,17 @@ export const databaseConfig = (
   configService: ConfigService,
 ): SequelizeModuleOptions => ({
   dialect: 'mysql',
-  host: configService.get('DB_HOST'),
-  port: configService.get('DB_PORT'),
-  username: configService.get('DB_USERNAME'),
-  password: configService.get('DB_PASSWORD'),
-  database: configService.get('DB_DATABASE'),
+  host: configService.get<string>('DB_HOST'),
+  port: configService.get<number>('DB_PORT'),
+  username: configService.get<string>('DB_USERNAME'),
+  password: configService.get<string>('DB_PASSWORD'),
+  database: configService.get<string>('DB_DATABASE'),
   autoLoadModels: true,
-  synchronize: true, // Set to false in production
-  logging:
-    configService.get('NODE_ENV') === 'development' ? console.log : false,
+  synchronize: true,
+  logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+  dialectOptions: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 });

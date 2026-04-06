@@ -24,7 +24,7 @@ export class ChatProvider {
     private readonly conversationModel: typeof Conversation,
     @InjectModel(Message)
     private readonly messageModel: typeof Message,
-  ) {}
+  ) { }
 
   async createConversation(
     createConversationDto: CreateConversationDto,
@@ -43,7 +43,6 @@ export class ChatProvider {
       limit = 10,
       search,
       status,
-      storeId,
       sortBy = 'lastMessageAt',
       sortOrder = 'DESC',
     } = queryDto;
@@ -56,9 +55,6 @@ export class ChatProvider {
     }
     if (status) {
       whereClause.status = status;
-    }
-    if (storeId) {
-      whereClause.storeId = storeId;
     }
 
     return this.conversationModel.findAndCountAll({

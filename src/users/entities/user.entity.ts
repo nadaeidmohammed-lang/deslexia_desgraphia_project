@@ -54,7 +54,7 @@ export class User extends Model<User> {
   avatar: string;
 
   @Column({
-    type: DataType.ENUM('parent', 'admin'),
+    type: DataType.ENUM('user', 'admin', 'parent'),
     defaultValue: 'parent',
   })
   role: string;
@@ -89,4 +89,35 @@ export class User extends Model<User> {
   @HasMany(() => Message)
   messages: Message[];
 
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  isEmailVerified: boolean;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  otpAttempts: number;
+
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  verificationCode: string;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  verificationExpires: Date;
+
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  deletedAt: Date;
 }

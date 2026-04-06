@@ -13,14 +13,13 @@ export class AuthProvider {
   constructor(
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) {}
+  ) { }
 
   async createUser(registerDto: RegisterDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     return this.userModel.create({
       ...registerDto,
       password: hashedPassword,
-      role: 'user',
       isActive: true,
     });
   }
@@ -36,6 +35,7 @@ export class AuthProvider {
         'lastName',
         'role',
         'isActive',
+        'isEmailVerified',
       ],
     });
   }
@@ -43,7 +43,14 @@ export class AuthProvider {
   async findUserForReset(email: string): Promise<User> {
     return this.userModel.findOne({
       where: { email },
-      attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires'],
+      attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires', 'otpAttempts'],
+    });
+  }
+
+  async findUserForVerification(email: string): Promise<User> {
+    return this.userModel.findOne({
+      where: { email },
+      attributes: ['id', 'email', 'verificationCode', 'verificationExpires', 'otpAttempts', 'isEmailVerified'],
     });
   }
 
@@ -58,6 +65,9 @@ export class AuthProvider {
         'avatar',
         'role',
         'isActive',
+        'resetPasswordOtp',
+        'resetPasswordExpires',
+        'otpAttempts',
       ],
     });
   }
@@ -72,6 +82,7 @@ export class AuthProvider {
 
   async updateLastLogin(userId: number): Promise<void> {
     // Future implementation
+    console.log(userId);
   }
 
   async updatePassword(
@@ -110,7 +121,18 @@ export class AuthProvider {
     expires: Date,
   ): Promise<void> {
     await this.userModel.update(
-      { resetPasswordOtp: otp, resetPasswordExpires: expires },
+      { resetPasswordOtp: otp, resetPasswordExpires: expires, otpAttempts: 0 },
+      { where: { id: userId } },
+    );
+  }
+
+  async saveVerificationToken(
+    userId: number,
+    code: string,
+    expires: Date,
+  ): Promise<void> {
+    await this.userModel.update(
+      { verificationCode: code, verificationExpires: expires, otpAttempts: 0 },
       { where: { id: userId } },
     );
   }

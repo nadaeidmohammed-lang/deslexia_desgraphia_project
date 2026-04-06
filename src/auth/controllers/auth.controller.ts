@@ -1,14 +1,31 @@
-import { Controller, Post, Body, UseGuards, Request, Patch } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Patch,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { LoginDto, RegisterDto, ChangePasswordDto } from '../dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators';
-import { ForgotPasswordDto, ResetPasswordDto } from '../dto/forget-password.dto';
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from '../dto/forget-password.dto';
+import { VerifyOtpDto } from '../dto/verify-otp.dto';
+import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 
 @ApiTags('Authentication')
-@ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -34,6 +51,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Patch('password')
   @ApiOperation({ summary: 'Change current user password' })
   @ApiBody({ type: ChangePasswordDto })
@@ -63,5 +81,34 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+  @Post('verify-otp')
+  @ApiOperation({ summary: 'Verify email OTP' })
+  @ApiBody({ type: VerifyOtpDto })
+  @ApiResponse({ status: 200, description: 'OTP verified successfully' })
+  verifyOtp(@Body() body: VerifyOtpDto) {
+    return this.authService.verifyOtp(body.email, body.otp);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('request-change-password-otp')
+  @ApiOperation({ summary: 'Send OTP to confirm password change' })
+  @ApiResponse({ status: 200, description: 'OTP sent successfully' })
+  requestChangePasswordOtp(@CurrentUser() user) {
+    console.log(user);
+    return this.authService.requestChangePasswordOtp(user.userId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch('change-password-with-otp')
+  @ApiOperation({ summary: 'Change password after OTP verification' })
+  @ApiBody({ type: ChangePasswordWithOtpDto })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  changePasswordWithOtp(
+    @CurrentUser() user,
+    @Body() dto: ChangePasswordWithOtpDto,
+  ) {
+    return this.authService.changePasswordWithOtp(user.userId, dto);
   }
 }

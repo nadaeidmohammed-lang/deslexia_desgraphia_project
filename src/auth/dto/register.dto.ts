@@ -43,7 +43,6 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Last name is required' })
   lastName: string;
 
-
   @ApiPropertyOptional({
     description: 'User role',
     enum: ['child', 'admin', 'parent'],
