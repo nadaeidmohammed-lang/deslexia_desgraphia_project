@@ -11,7 +11,7 @@ export const databaseConfig = (
   password: configService.get<string>('DB_PASSWORD'),
   database: configService.get<string>('DB_DATABASE'),
   autoLoadModels: true,
-  synchronize: false,
+  synchronize: true,
   logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
   dialectOptions: {
     ssl: {
