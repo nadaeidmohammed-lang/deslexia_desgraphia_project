@@ -54,7 +54,7 @@ export class MailService {
 
     try {
       await this.transporter.sendMail({
-        from,
+        from: `"Qupedia Support" <${this.configService.get<string>('MAIL_USER')}>`,
         to: email,
         subject: 'Password Reset Code',
         html: `
