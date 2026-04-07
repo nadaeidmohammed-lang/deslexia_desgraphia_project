@@ -22,7 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.authProvider.validateUser(email, password);
@@ -52,27 +52,20 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    const emailExists = await this.authProvider.checkEmailExists(
-      registerDto.email,
-    );
-
-    if (emailExists) {
-      throw new ConflictException('Email already exists');
-    }
+    const emailExists = await this.authProvider.checkEmailExists(registerDto.email);
+    if (emailExists) throw new ConflictException('Email already exists');
 
     const user = await this.authProvider.createUser(registerDto);
-
-    // Generate OTP (6-digits)
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
     const expires = new Date();
     expires.setMinutes(expires.getMinutes() + 10);
-
-    // Save OTP in database
     await this.authProvider.saveVerificationToken(user.id, otp, expires);
 
-    // Send Email
-    await this.mailService.sendVerificationEmail(user.email, otp);
+    try {
+      this.mailService.sendVerificationEmail(user.email, otp).catch(e => console.error("Mail Error:", e));
+    } catch (mailError) {
+      console.log('User created but email failed');
+    }
 
     return {
       message: 'User registered successfully. Please verify your email.',
@@ -135,7 +128,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    
+
     if (user.otpAttempts >= 5) {
       throw new BadRequestException('Too many incorrect OTP attempts');
     }
@@ -150,13 +143,13 @@ export class AuthService {
       await user.save();
       throw new BadRequestException('Invalid verification code');
     }
-    
+
     user.verificationCode = null;
     user.verificationExpires = null;
     user.otpAttempts = 0;
     user.isEmailVerified = true;
     await user.save();
-    
+
     return {
       message: 'Email verified successfully',
     };
@@ -191,7 +184,7 @@ export class AuthService {
     if (
       user.resetPasswordExpires &&
       new Date(user.resetPasswordExpires).getTime() - new Date().getTime() >
-        9 * 60 * 1000
+      9 * 60 * 1000
     ) {
       throw new BadRequestException(
         'Please wait before requesting another OTP',
