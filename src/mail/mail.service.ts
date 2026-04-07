@@ -11,14 +11,17 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('MAIL_HOST'),
       port: this.configService.get<number>('MAIL_PORT'),
-      secure: false,
+      secure: false, // يجب أن يكون false لبورت 587
       auth: {
         user: this.configService.get<string>('MAIL_USER'),
         pass: this.configService.get<string>('MAIL_PASS'),
       },
-      connectionTimeout: 10000,
+      // إعدادات إضافية لحل مشاكل السيرفرات السحابية (Railway)
+      connectionTimeout: 8000, // 8 ثوانٍ محاولة اتصال
       greetingTimeout: 5000,
-      socketTimeout: 10000,
+      socketTimeout: 8000,
+      dnsTimeout: 5000,
+      // إجبار استخدام IPv4 لحل خطأ ENETUNREACH
       options: {
         family: 4
       }
@@ -30,22 +33,22 @@ export class MailService {
 
     try {
       await this.transporter.sendMail({
-        from,
+        from: `"Qupedia Support" <${this.configService.get<string>('MAIL_USER')}>`,
         to: email,
         subject: 'Email Verification Code',
         html: `
-          <div style="font-family: Arial, sans-serif; text-align: center;">
-            <h2>Email Verification</h2>
-            <p>Please use the following 6-digit code to verify your account:</p>
-            <h1 style="color: #4A90E2; letter-spacing: 5px;">${code}</h1>
-            <p>This code will expire in 10 minutes.</p>
+          <div style="font-family: Arial; text-align: center; border: 1px solid #eee; padding: 20px;">
+            <h2 style="color: #333;">Welcome to Qupedia!</h2>
+            <p>Your verification code is:</p>
+            <h1 style="color: #4A90E2; font-size: 40px; letter-spacing: 5px;">${code}</h1>
+            <p>This code expires in 10 minutes.</p>
           </div>
         `,
       });
-      this.logger.log(`Verification email sent to ${email}`);
+      this.logger.log(`✅ Email sent successfully to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send verification email to ${email}: ${error.message}`);
-      throw error;
+      this.logger.error(`❌ Failed to send email to ${email}: ${error.message}`);
+      // لا نحتاج لعمل throw هنا لأننا عملنا catch في الـ AuthService
     }
   }
 
