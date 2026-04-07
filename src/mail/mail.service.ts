@@ -9,31 +9,29 @@ export class MailService {
 
   constructor(private readonly configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('MAIL_HOST'),
-      port: this.configService.get<number>('MAIL_PORT'),
-      secure: false, // يجب أن يكون false لبورت 587
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true, // بورت 465 يحتاج لـ true
       auth: {
-        user: this.configService.get<string>('MAIL_USER'),
+        user: 'resend', // كلمة ثابتة في Resend
         pass: this.configService.get<string>('MAIL_PASS'),
       },
-      // إعدادات إضافية لحل مشاكل السيرفرات السحابية (Railway)
-      connectionTimeout: 8000, // 8 ثوانٍ محاولة اتصال
-      greetingTimeout: 5000,
-      socketTimeout: 8000,
-      dnsTimeout: 5000,
-      // إجبار استخدام IPv4 لحل خطأ ENETUNREACH
+      // إعدادات الربط مع Railway
+      connectionTimeout: 10000,
       options: {
-        family: 4
+        family: 4 // إجبار IPv4 لتجنب مشاكل الشبكة
       }
     } as any);
   }
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
-    const from = this.configService.get<string>('MAIL_FROM');
+    // في النسخة المجانية من Resend، لازم الـ From يكون onboarding@resend.dev
+    // إلا لو ربطتي دومين خاص بيكي
+    const from = 'onboarding@resend.dev';
 
     try {
       await this.transporter.sendMail({
-        from: `"Qupedia Support" <${this.configService.get<string>('MAIL_USER')}>`,
+        from: `"Qupedia Support" <${from}>`,
         to: email,
         subject: 'Email Verification Code',
         html: `
@@ -45,19 +43,18 @@ export class MailService {
           </div>
         `,
       });
-      this.logger.log(`✅ Email sent successfully to ${email}`);
+      this.logger.log(`✅ Email sent successfully via Resend to ${email}`);
     } catch (error) {
-      this.logger.error(`❌ Failed to send email to ${email}: ${error.message}`);
-      // لا نحتاج لعمل throw هنا لأننا عملنا catch في الـ AuthService
+      this.logger.error(`❌ Resend Failed: ${error.message}`);
     }
   }
 
   async sendPasswordResetEmail(email: string, code: string): Promise<void> {
-    const from = this.configService.get<string>('MAIL_FROM');
+    const from = 'onboarding@resend.dev';
 
     try {
       await this.transporter.sendMail({
-        from: `"Qupedia Support" <${this.configService.get<string>('MAIL_USER')}>`,
+        from: `"Qupedia Support" <${from}>`,
         to: email,
         subject: 'Password Reset Code',
         html: `
@@ -69,10 +66,9 @@ export class MailService {
           </div>
         `,
       });
-      this.logger.log(`Password reset email sent to ${email}`);
+      this.logger.log(`✅ Reset email sent via Resend to ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to send reset email to ${email}: ${error.message}`);
-      throw error;
+      this.logger.error(`❌ Resend Reset Failed: ${error.message}`);
     }
   }
 }
