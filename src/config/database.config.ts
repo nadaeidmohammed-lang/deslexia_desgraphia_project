@@ -13,9 +13,9 @@ export const databaseConfig = (
   autoLoadModels: true,
   synchronize: true,
   logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  // dialectOptions: {
+  //   ssl: {
+  //     rejectUnauthorized: false,
+  //   },
+  // },
 });
