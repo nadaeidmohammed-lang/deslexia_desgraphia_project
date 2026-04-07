@@ -135,7 +135,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    
+
     if (user.otpAttempts >= 5) {
       throw new BadRequestException('Too many incorrect OTP attempts');
     }
@@ -150,13 +150,13 @@ export class AuthService {
       await user.save();
       throw new BadRequestException('Invalid verification code');
     }
-    
+
     user.verificationCode = null;
     user.verificationExpires = null;
     user.otpAttempts = 0;
     user.isEmailVerified = true;
     await user.save();
-    
+
     return {
       message: 'Email verified successfully',
     };
@@ -215,6 +215,14 @@ export class AuthService {
     await this.authProvider.updatePassword(user.id, dto.newPassword);
     return {
       message: 'Password changed successfully',
+    };
+  }
+
+  async deleteAccount(userId: number, password: string) {
+    await this.authProvider.deleteAccount(userId, password);
+
+    return {
+      message: 'Account deleted permanently',
     };
   }
 }

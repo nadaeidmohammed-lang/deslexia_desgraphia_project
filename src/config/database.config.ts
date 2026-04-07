@@ -12,10 +12,12 @@ export const databaseConfig = (
   database: configService.get<string>('DB_DATABASE'),
   autoLoadModels: true,
   synchronize: true,
-  logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  logging:
+    configService.get('NODE_ENV') === 'development' ? console.log : false,
+
+  // dialectOptions: {
+  //   ssl: {
+  //     rejectUnauthorized: false,
+  //   },
+  // },
 });

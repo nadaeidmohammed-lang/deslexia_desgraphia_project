@@ -168,6 +168,12 @@ let AuthService = class AuthService {
             message: 'Password changed successfully',
         };
     }
+    async deleteAccount(userId, password) {
+        await this.authProvider.deleteAccount(userId, password);
+        return {
+            message: 'Account deleted permanently',
+        };
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([

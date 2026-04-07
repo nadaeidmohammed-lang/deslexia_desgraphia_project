@@ -5,6 +5,7 @@ import {
   UseGuards,
   Request,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +25,8 @@ import {
 } from '../dto/forget-password.dto';
 import { VerifyOtpDto } from '../dto/verify-otp.dto';
 import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
+import { HttpCode } from '@nestjs/common';
+import { DeleteAccountDto } from '../dto/delete-account.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -32,6 +35,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({ summary: 'User login' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Login successful' })
@@ -53,6 +57,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Patch('password')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Change current user password' })
   @ApiBody({ type: ChangePasswordDto })
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
@@ -67,6 +72,7 @@ export class AuthController {
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request password reset OTP' })
+  @HttpCode(200)
   @ApiBody({ type: ForgotPasswordDto })
   @ApiResponse({ status: 200, description: 'OTP sent successfully' })
   @ApiResponse({ status: 404, description: 'User email not found' })
@@ -77,13 +83,30 @@ export class AuthController {
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset password using OTP' })
   @ApiBody({ type: ResetPasswordDto })
+  @HttpCode(200)
   @ApiResponse({ status: 200, description: 'Password reset successful' })
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
   @Post('verify-otp')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: {
+          type: 'string',
+          example: 'test@test.com',
+        },
+        otp: {
+          type: 'string',
+          example: '123456',
+        },
+      },
+    },
+  })
   @ApiOperation({ summary: 'Verify email OTP' })
+  @HttpCode(200)
   @ApiBody({ type: VerifyOtpDto })
   @ApiResponse({ status: 200, description: 'OTP verified successfully' })
   verifyOtp(@Body() body: VerifyOtpDto) {
@@ -93,6 +116,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('request-change-password-otp')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Send OTP to confirm password change' })
   @ApiResponse({ status: 200, description: 'OTP sent successfully' })
   requestChangePasswordOtp(@CurrentUser() user) {
@@ -102,6 +126,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Patch('change-password-with-otp')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Change password after OTP verification' })
   @ApiBody({ type: ChangePasswordWithOtpDto })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
@@ -110,5 +135,15 @@ export class AuthController {
     @Body() dto: ChangePasswordWithOtpDto,
   ) {
     return this.authService.changePasswordWithOtp(user.userId, dto);
+  }
+
+  @Delete('delete-account')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user account permanently' })
+  @ApiResponse({ status: 200, description: 'Account deleted successfully' })
+  @ApiBody({ type: DeleteAccountDto }) // 👈 ده المهم
+  deleteAccount(@CurrentUser() user, @Body() body: DeleteAccountDto) {
+    return this.authService.deleteAccount(user.userId, body.password);
   }
 }

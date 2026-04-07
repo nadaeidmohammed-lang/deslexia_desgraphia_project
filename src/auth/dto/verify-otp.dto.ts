@@ -3,8 +3,9 @@ import { IsEmail, IsString } from 'class-validator';
 
 export class VerifyOtpDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'user@gmail.com',
     description: 'User email address',
+    required: true,
   })
   @IsEmail()
   email: string;
@@ -12,6 +13,7 @@ export class VerifyOtpDto {
   @ApiProperty({
     example: '1234',
     description: 'OTP code sent to email',
+    required: true,
   })
   @IsString()
   otp: string;

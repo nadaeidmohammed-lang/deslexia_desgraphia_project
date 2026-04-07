@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ForgotPasswordDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'user@gmail.com',
     description: 'User email address',
   })
   @IsEmail()
@@ -13,7 +13,7 @@ export class ForgotPasswordDto {
 
 export class ResetPasswordDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'user@gmail.com',
     description: 'User email address',
   })
   @IsEmail()

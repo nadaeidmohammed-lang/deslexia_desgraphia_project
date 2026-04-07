@@ -13,7 +13,7 @@ export class AuthProvider {
   constructor(
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) { }
+  ) {}
 
   async createUser(registerDto: RegisterDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
@@ -31,8 +31,6 @@ export class AuthProvider {
         'id',
         'email',
         'password',
-        'firstName',
-        'lastName',
         'role',
         'isActive',
         'isEmailVerified',
@@ -43,14 +41,27 @@ export class AuthProvider {
   async findUserForReset(email: string): Promise<User> {
     return this.userModel.findOne({
       where: { email },
-      attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires', 'otpAttempts'],
+      attributes: [
+        'id',
+        'email',
+        'resetPasswordOtp',
+        'resetPasswordExpires',
+        'otpAttempts',
+      ],
     });
   }
 
   async findUserForVerification(email: string): Promise<User> {
     return this.userModel.findOne({
       where: { email },
-      attributes: ['id', 'email', 'verificationCode', 'verificationExpires', 'otpAttempts', 'isEmailVerified'],
+      attributes: [
+        'id',
+        'email',
+        'verificationCode',
+        'verificationExpires',
+        'otpAttempts',
+        'isEmailVerified',
+      ],
     });
   }
 
@@ -59,9 +70,6 @@ export class AuthProvider {
       attributes: [
         'id',
         'email',
-        'firstName',
-        'lastName',
-        'phone',
         'avatar',
         'role',
         'isActive',
@@ -157,7 +165,7 @@ export class AuthProvider {
     userId: number,
     profileData: Partial<User>,
   ): Promise<void> {
-    const allowedFields = ['firstName', 'lastName', 'phone', 'avatar'];
+    const allowedFields = ['avatar'];
     const updateData = Object.keys(profileData)
       .filter((key) => allowedFields.includes(key))
       .reduce((obj, key) => {
@@ -180,6 +188,24 @@ export class AuthProvider {
       where: { isActive: true },
       limit,
       order: [['createdAt', 'DESC']],
+    });
+  }
+
+  async deleteAccount(userId: number, password: string): Promise<void> {
+    const user = await this.userModel.findByPk(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      throw new UnauthorizedException('Wrong password');
+    }
+
+    await this.userModel.destroy({
+      where: { id: userId },
     });
   }
 }

@@ -37,18 +37,6 @@ export class User extends Model<User> {
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-  })
-  firstName: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  lastName: string;
-
-  @Column({
-    type: DataType.STRING,
     allowNull: true,
   })
   avatar: string;
@@ -101,7 +89,6 @@ export class User extends Model<User> {
   })
   otpAttempts: number;
 
-
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -113,7 +100,6 @@ export class User extends Model<User> {
     allowNull: true,
   })
   verificationExpires: Date;
-
 
   @Column({
     type: DataType.DATE,
