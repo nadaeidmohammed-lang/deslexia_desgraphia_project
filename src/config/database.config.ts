@@ -15,6 +15,7 @@ export const databaseConfig = (
 
   logging:
     configService.get('NODE_ENV') === 'development' ? console.log : false,
+
   // dialectOptions: {
   //   ssl: {
   //     rejectUnauthorized: false,
