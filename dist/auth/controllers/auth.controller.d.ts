@@ -2,7 +2,6 @@ import { AuthService } from '../services/auth.service';
 import { RegisterDto, ChangePasswordDto } from '../dto';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dto/forget-password.dto';
 import { VerifyOtpDto } from '../dto/verify-otp.dto';
-import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 import { DeleteAccountDto } from '../dto/delete-account.dto';
 export declare class AuthController {
     private readonly authService;
@@ -32,12 +31,6 @@ export declare class AuthController {
         message: string;
     }>;
     verifyOtp(body: VerifyOtpDto): Promise<{
-        message: string;
-    }>;
-    requestChangePasswordOtp(user: any): Promise<{
-        message: string;
-    }>;
-    changePasswordWithOtp(user: any, dto: ChangePasswordWithOtpDto): Promise<{
         message: string;
     }>;
     deleteAccount(user: any, body: DeleteAccountDto): Promise<{

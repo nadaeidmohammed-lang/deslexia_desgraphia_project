@@ -10,8 +10,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateChildDto = void 0;
-const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
 class CreateChildDto {
 }
 exports.CreateChildDto = CreateChildDto;
@@ -22,15 +22,38 @@ __decorate([
     __metadata("design:type", String)
 ], CreateChildDto.prototype, "name", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 8 }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(4),
-    (0, class_validator_1.Max)(12),
-    __metadata("design:type", Number)
-], CreateChildDto.prototype, "age", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ enum: ['dyslexia', 'dysgraphia', 'both'] }),
-    (0, class_validator_1.IsEnum)(['dyslexia', 'dysgraphia', 'both']),
+    (0, swagger_1.ApiProperty)({
+        example: '01/01/2020',
+        description: 'Format: dd/MM/yyyy',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^\d{2}\/\d{2}\/\d{4}$/, {
+        message: 'birthDate must be in format dd/MM/yyyy',
+    }),
     __metadata("design:type", String)
-], CreateChildDto.prototype, "conditionType", void 0);
+], CreateChildDto.prototype, "birthDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 1,
+        description: '0 = girl, 1 = boy',
+    }),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsIn)([0, 1]),
+    __metadata("design:type", Number)
+], CreateChildDto.prototype, "gender", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'assets/images/child/avatar1.jpg',
+    }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateChildDto.prototype, "avatar", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        example: 'level1',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsIn)(['level1', 'level2', 'level3', 'level4', 'level5', 'level6', 'level7']),
+    __metadata("design:type", String)
+], CreateChildDto.prototype, "level", void 0);
 //# sourceMappingURL=create-child.dto.js.map

@@ -1,37 +1,59 @@
-import { Controller, Post, Get, Body, UseGuards, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Put,
+  Delete,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { CreateChildDto } from '../dto/create-child.dto';
+import { UpdateChildDto } from '../dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ChildrenService } from '../services/child.service';
-import { UpdateChildDto } from '../dto';
 
 @ApiTags('Children')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('children')
+@Controller('api/children')
 export class ChildrenController {
-  constructor(private readonly childrenService: ChildrenService) {}
+  constructor(private readonly service: ChildrenService) {}
 
   @Post()
-  async create(@CurrentUser() user: any, @Body() createChildDto: CreateChildDto) {
-    return this.childrenService.create(user.userId, createChildDto);
+  @ApiOperation({ summary: 'Create child' })
+  @ApiResponse({ status: 201 })
+  create(@CurrentUser() user: any, @Body() dto: CreateChildDto) {
+    return this.service.create(user.userId, dto);
   }
 
   @Get()
-  async findAll(@CurrentUser() user: any) {
-    return this.childrenService.findAllByParent(user.userId);
+  @ApiOperation({ summary: 'Get all children' })
+  findAll(@CurrentUser() user: any) {
+    return this.service.findAllByParent(user.userId);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update child profile' })
-  async update(
-    @CurrentUser() user: any, 
-    @Param('id') id: number, 
-    @Body() updateChildDto:UpdateChildDto
+  @Put(':id')
+  @ApiOperation({ summary: 'Update child' })
+  update(
+    @CurrentUser() user: any,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateChildDto,
   ) {
-    return this.childrenService.update(id, user.userId, updateChildDto);
+    return this.service.update(id, user.userId, dto);
   }
 
-  
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete child' })
+  delete(@CurrentUser() user: any, @Param('id', ParseIntPipe) id: number) {
+    return this.service.delete(id, user.userId);
+  }
 }

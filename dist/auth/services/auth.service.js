@@ -24,14 +24,18 @@ let AuthService = class AuthService {
     }
     async validateUser(email, password) {
         const user = await this.authProvider.validateUser(email, password);
-        if (!user)
-            return null;
-        return user;
-    }
-    async login(user) {
+        if (!user) {
+            throw new common_1.UnauthorizedException('Invalid email or password');
+        }
         if (!user.isEmailVerified) {
             throw new common_1.BadRequestException('Please verify your email first');
         }
+        if (!user.isActive) {
+            throw new common_1.UnauthorizedException('Account is deactivated');
+        }
+        return user;
+    }
+    async login(user) {
         const payload = { email: user.email, sub: user.id, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
@@ -46,15 +50,21 @@ let AuthService = class AuthService {
     }
     async register(registerDto) {
         const emailExists = await this.authProvider.checkEmailExists(registerDto.email);
-        if (emailExists) {
+        if (emailExists)
             throw new common_1.ConflictException('Email already exists');
-        }
         const user = await this.authProvider.createUser(registerDto);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date();
         expires.setMinutes(expires.getMinutes() + 10);
         await this.authProvider.saveVerificationToken(user.id, otp, expires);
-        await this.mailService.sendVerificationEmail(user.email, otp);
+        try {
+            this.mailService
+                .sendVerificationEmail(user.email, otp)
+                .catch((e) => console.error('Mail Error:', e));
+        }
+        catch (mailError) {
+            console.log('User created but email failed');
+        }
         return {
             message: 'User registered successfully. Please verify your email.',
             devOnlyOtp: otp,
@@ -137,36 +147,6 @@ let AuthService = class AuthService {
         user.resetPasswordExpires = null;
         user.otpAttempts = 0;
         await user.save();
-    }
-    async requestChangePasswordOtp(userId) {
-        const user = await this.authProvider.findUserById(userId);
-        if (!user) {
-            throw new common_1.NotFoundException('User not found');
-        }
-        if (user.resetPasswordExpires &&
-            new Date(user.resetPasswordExpires).getTime() - new Date().getTime() >
-                9 * 60 * 1000) {
-            throw new common_1.BadRequestException('Please wait before requesting another OTP');
-        }
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date();
-        expires.setMinutes(expires.getMinutes() + 10);
-        await this.authProvider.saveResetToken(user.id, otp, expires);
-        await this.mailService.sendPasswordResetEmail(user.email, otp);
-        return {
-            message: 'OTP sent to your email',
-        };
-    }
-    async changePasswordWithOtp(userId, dto) {
-        const user = await this.authProvider.findUserById(userId);
-        if (!user) {
-            throw new common_1.NotFoundException('User not found');
-        }
-        await this.validateOtp(user, dto.otp);
-        await this.authProvider.updatePassword(user.id, dto.newPassword);
-        return {
-            message: 'Password changed successfully',
-        };
     }
     async deleteAccount(userId, password) {
         await this.authProvider.deleteAccount(userId, password);

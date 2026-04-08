@@ -1,5 +1,7 @@
 export declare class CreateChildDto {
     name: string;
-    age: number;
-    conditionType: string;
+    birthDate: string;
+    gender: number;
+    avatar: string;
+    level: string;
 }

@@ -4,9 +4,9 @@ import { UpdateChildDto } from '../dto';
 export declare class ChildProvider {
     private readonly childModel;
     constructor(childModel: typeof Child);
-    create(parentId: number, createChildDto: CreateChildDto): Promise<Child>;
+    create(parentId: number, dto: CreateChildDto): Promise<Child>;
     findAllByParent(parentId: number): Promise<Child[]>;
     findOne(id: number, parentId: number): Promise<Child>;
-    update(id: number, parentId: number, dto: UpdateChildDto): Promise<[number, Child[]]>;
+    update(id: number, parentId: number, dto: UpdateChildDto): Promise<Child | null>;
     remove(id: number, parentId: number): Promise<number>;
 }

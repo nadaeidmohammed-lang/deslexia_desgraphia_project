@@ -24,7 +24,6 @@ import {
   ResetPasswordDto,
 } from '../dto/forget-password.dto';
 import { VerifyOtpDto } from '../dto/verify-otp.dto';
-import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 import { HttpCode } from '@nestjs/common';
 import { DeleteAccountDto } from '../dto/delete-account.dto';
 
@@ -113,36 +112,12 @@ export class AuthController {
     return this.authService.verifyOtp(body.email, body.otp);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @Post('request-change-password-otp')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Send OTP to confirm password change' })
-  @ApiResponse({ status: 200, description: 'OTP sent successfully' })
-  requestChangePasswordOtp(@CurrentUser() user) {
-    console.log(user);
-    return this.authService.requestChangePasswordOtp(user.userId);
-  }
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @Patch('change-password-with-otp')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Change password after OTP verification' })
-  @ApiBody({ type: ChangePasswordWithOtpDto })
-  @ApiResponse({ status: 200, description: 'Password changed successfully' })
-  changePasswordWithOtp(
-    @CurrentUser() user,
-    @Body() dto: ChangePasswordWithOtpDto,
-  ) {
-    return this.authService.changePasswordWithOtp(user.userId, dto);
-  }
-
   @Delete('delete-account')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete user account permanently' })
   @ApiResponse({ status: 200, description: 'Account deleted successfully' })
-  @ApiBody({ type: DeleteAccountDto }) // 👈 ده المهم
+  @ApiBody({ type: DeleteAccountDto })
   deleteAccount(@CurrentUser() user, @Body() body: DeleteAccountDto) {
     return this.authService.deleteAccount(user.userId, body.password);
   }

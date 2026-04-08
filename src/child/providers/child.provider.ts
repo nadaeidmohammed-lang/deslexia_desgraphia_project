@@ -11,9 +11,9 @@ export class ChildProvider {
     private readonly childModel: typeof Child,
   ) {}
 
-  async create(parentId: number, createChildDto: CreateChildDto): Promise<Child> {
+  async create(parentId: number, dto: CreateChildDto): Promise<Child> {
     return this.childModel.create({
-      ...createChildDto,
+      ...dto,
       parentId,
     });
   }
@@ -21,7 +21,7 @@ export class ChildProvider {
   async findAllByParent(parentId: number): Promise<Child[]> {
     return this.childModel.findAll({
       where: { parentId },
-      order: [['createdAt', 'DESC']],
+      order: [['id', 'DESC']],
     });
   }
 
@@ -30,11 +30,19 @@ export class ChildProvider {
       where: { id, parentId },
     });
   }
-  async update(id: number, parentId: number, dto: UpdateChildDto): Promise<[number, Child[]]> {
-    return this.childModel.update(dto, {
+
+  async update(
+    id: number,
+    parentId: number,
+    dto: UpdateChildDto,
+  ): Promise<Child | null> {
+    const child = await this.childModel.findOne({
       where: { id, parentId },
-      returning: true, 
     });
+
+    if (!child) return null;
+
+    return child.update(dto);
   }
 
   async remove(id: number, parentId: number): Promise<number> {

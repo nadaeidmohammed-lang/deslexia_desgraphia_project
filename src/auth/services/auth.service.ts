@@ -3,6 +3,7 @@ import {
   ConflictException,
   BadRequestException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthProvider } from '../providers/auth.provider';
@@ -13,7 +14,6 @@ import {
 } from '../dto/forget-password.dto';
 import { MailService } from '../../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
-import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,21 +22,27 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.authProvider.validateUser(email, password);
 
-    if (!user) return null;
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    if (!user.isEmailVerified) {
+      throw new BadRequestException('Please verify your email first');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
 
     return user;
   }
 
   async login(user: any) {
-    if (!user.isEmailVerified) {
-      throw new BadRequestException('Please verify your email first');
-    }
-
     const payload = { email: user.email, sub: user.id, role: user.role };
 
     return {
@@ -52,7 +58,9 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    const emailExists = await this.authProvider.checkEmailExists(registerDto.email);
+    const emailExists = await this.authProvider.checkEmailExists(
+      registerDto.email,
+    );
     if (emailExists) throw new ConflictException('Email already exists');
 
     const user = await this.authProvider.createUser(registerDto);
@@ -62,7 +70,9 @@ export class AuthService {
     await this.authProvider.saveVerificationToken(user.id, otp, expires);
 
     try {
-      this.mailService.sendVerificationEmail(user.email, otp).catch(e => console.error("Mail Error:", e));
+      this.mailService
+        .sendVerificationEmail(user.email, otp)
+        .catch((e) => console.error('Mail Error:', e));
     } catch (mailError) {
       console.log('User created but email failed');
     }
@@ -174,41 +184,6 @@ export class AuthService {
     user.resetPasswordExpires = null;
     user.otpAttempts = 0;
     await user.save();
-  }
-
-  async requestChangePasswordOtp(userId: number) {
-    const user = await this.authProvider.findUserById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (
-      user.resetPasswordExpires &&
-      new Date(user.resetPasswordExpires).getTime() - new Date().getTime() >
-      9 * 60 * 1000
-    ) {
-      throw new BadRequestException(
-        'Please wait before requesting another OTP',
-      );
-    }
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date();
-    expires.setMinutes(expires.getMinutes() + 10);
-    await this.authProvider.saveResetToken(user.id, otp, expires);
-    await this.mailService.sendPasswordResetEmail(user.email, otp);
-    return {
-      message: 'OTP sent to your email',
-    };
-  }
-  async changePasswordWithOtp(userId: number, dto: ChangePasswordWithOtpDto) {
-    const user = await this.authProvider.findUserById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    await this.validateOtp(user, dto.otp);
-    await this.authProvider.updatePassword(user.id, dto.newPassword);
-    return {
-      message: 'Password changed successfully',
-    };
   }
 
   async deleteAccount(userId: number, password: string) {

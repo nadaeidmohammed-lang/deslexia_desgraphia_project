@@ -9,18 +9,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChildrenModule = void 0;
 const common_1 = require("@nestjs/common");
 const sequelize_1 = require("@nestjs/sequelize");
-const child_provider_1 = require("./providers/child.provider");
 const child_entity_1 = require("./entities/child.entity");
 const child_controller_1 = require("./controllers/child.controller");
 const child_service_1 = require("./services/child.service");
+const child_provider_1 = require("./providers/child.provider");
 let ChildrenModule = class ChildrenModule {
 };
 exports.ChildrenModule = ChildrenModule;
 exports.ChildrenModule = ChildrenModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            sequelize_1.SequelizeModule.forFeature([child_entity_1.Child]),
-        ],
+        imports: [sequelize_1.SequelizeModule.forFeature([child_entity_1.Child])],
         controllers: [child_controller_1.ChildrenController],
         providers: [child_service_1.ChildrenService, child_provider_1.ChildProvider],
         exports: [child_service_1.ChildrenService],

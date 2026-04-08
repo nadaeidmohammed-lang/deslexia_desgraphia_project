@@ -8,36 +8,47 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChildrenService = void 0;
 const common_1 = require("@nestjs/common");
-const sequelize_1 = require("@nestjs/sequelize");
-const child_entity_1 = require("../entities/child.entity");
+const child_provider_1 = require("../providers/child.provider");
 let ChildrenService = class ChildrenService {
-    constructor(childModel) {
-        this.childModel = childModel;
+    constructor(childProvider) {
+        this.childProvider = childProvider;
     }
-    async create(parentId, dto) {
-        return this.childModel.create({ ...dto, parentId });
+    async create(userId, dto) {
+        const child = await this.childProvider.create(userId, dto);
+        return {
+            message: 'Child created successfully',
+            data: child,
+        };
     }
     async findAllByParent(parentId) {
-        return this.childModel.findAll({ where: { parentId } });
+        return this.childProvider.findAllByParent(parentId);
     }
     async update(id, parentId, dto) {
-        const child = await this.childModel.findOne({ where: { id, parentId } });
-        if (!child) {
-            throw new common_1.NotFoundException('Child profile not found or access denied');
+        const updated = await this.childProvider.update(id, parentId, dto);
+        if (!updated) {
+            throw new common_1.NotFoundException('Child not found or you are not allowed to access it');
         }
-        return child.update(dto);
+        return {
+            message: 'Child updated successfully',
+            data: updated,
+        };
+    }
+    async delete(id, parentId) {
+        const deleted = await this.childProvider.remove(id, parentId);
+        if (!deleted) {
+            throw new common_1.NotFoundException('Child not found or you are not allowed to delete it');
+        }
+        return {
+            message: 'Child deleted successfully',
+        };
     }
 };
 exports.ChildrenService = ChildrenService;
 exports.ChildrenService = ChildrenService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, sequelize_1.InjectModel)(child_entity_1.Child)),
-    __metadata("design:paramtypes", [Object])
+    __metadata("design:paramtypes", [child_provider_1.ChildProvider])
 ], ChildrenService);
 //# sourceMappingURL=child.service.js.map

@@ -4,7 +4,6 @@ import { ChangePasswordDto, RegisterDto } from '../dto';
 import { ForgotPasswordDto, ResetPasswordDto } from '../dto/forget-password.dto';
 import { MailService } from '../../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
-import { ChangePasswordWithOtpDto } from '../dto/change-password-with-otp.dto';
 export declare class AuthService {
     private readonly authProvider;
     private readonly jwtService;
@@ -40,12 +39,6 @@ export declare class AuthService {
         message: string;
     }>;
     validateOtp(user: any, otp: string): Promise<void>;
-    requestChangePasswordOtp(userId: number): Promise<{
-        message: string;
-    }>;
-    changePasswordWithOtp(userId: number, dto: ChangePasswordWithOtpDto): Promise<{
-        message: string;
-    }>;
     deleteAccount(userId: number, password: string): Promise<{
         message: string;
     }>;

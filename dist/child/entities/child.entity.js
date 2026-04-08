@@ -16,7 +16,9 @@ let Child = class Child extends sequelize_typescript_1.Model {
 };
 exports.Child = Child;
 __decorate([
-    (0, sequelize_typescript_1.Column)({ primaryKey: true, autoIncrement: true, type: sequelize_typescript_1.DataType.INTEGER }),
+    sequelize_typescript_1.PrimaryKey,
+    sequelize_typescript_1.AutoIncrement,
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
     __metadata("design:type", Number)
 ], Child.prototype, "id", void 0);
 __decorate([
@@ -24,23 +26,28 @@ __decorate([
     __metadata("design:type", String)
 ], Child.prototype, "name", void 0);
 __decorate([
-    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.INTEGER }),
-    __metadata("design:type", Number)
-], Child.prototype, "age", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.ENUM('dyslexia', 'dysgraphia', 'both'),
-        allowNull: false
-    }),
+    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.STRING, allowNull: false }),
     __metadata("design:type", String)
-], Child.prototype, "conditionType", void 0);
+], Child.prototype, "birthDate", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.INTEGER, allowNull: false }),
+    __metadata("design:type", Number)
+], Child.prototype, "gender", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.STRING, allowNull: true }),
+    __metadata("design:type", String)
+], Child.prototype, "avatar", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.STRING, allowNull: false }),
+    __metadata("design:type", String)
+], Child.prototype, "level", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => user_entity_1.User),
-    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.INTEGER, allowNull: false }),
+    (0, sequelize_typescript_1.Column)({ type: sequelize_typescript_1.DataType.INTEGER, allowNull: false, onDelete: 'CASCADE' }),
     __metadata("design:type", Number)
 ], Child.prototype, "parentId", void 0);
 __decorate([
-    (0, sequelize_typescript_1.BelongsTo)(() => user_entity_1.User),
+    (0, sequelize_typescript_1.BelongsTo)(() => user_entity_1.User, { onDelete: 'CASCADE' }),
     __metadata("design:type", user_entity_1.User)
 ], Child.prototype, "parent", void 0);
 exports.Child = Child = __decorate([

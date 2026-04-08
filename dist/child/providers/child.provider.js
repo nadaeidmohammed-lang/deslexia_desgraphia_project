@@ -20,16 +20,16 @@ let ChildProvider = class ChildProvider {
     constructor(childModel) {
         this.childModel = childModel;
     }
-    async create(parentId, createChildDto) {
+    async create(parentId, dto) {
         return this.childModel.create({
-            ...createChildDto,
+            ...dto,
             parentId,
         });
     }
     async findAllByParent(parentId) {
         return this.childModel.findAll({
             where: { parentId },
-            order: [['createdAt', 'DESC']],
+            order: [['id', 'DESC']],
         });
     }
     async findOne(id, parentId) {
@@ -38,10 +38,12 @@ let ChildProvider = class ChildProvider {
         });
     }
     async update(id, parentId, dto) {
-        return this.childModel.update(dto, {
+        const child = await this.childModel.findOne({
             where: { id, parentId },
-            returning: true,
         });
+        if (!child)
+            return null;
+        return child.update(dto);
     }
     async remove(id, parentId) {
         return this.childModel.destroy({
