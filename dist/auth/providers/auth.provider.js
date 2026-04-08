@@ -36,8 +36,6 @@ let AuthProvider = class AuthProvider {
                 'id',
                 'email',
                 'password',
-                'firstName',
-                'lastName',
                 'role',
                 'isActive',
                 'isEmailVerified',
@@ -47,13 +45,26 @@ let AuthProvider = class AuthProvider {
     async findUserForReset(email) {
         return this.userModel.findOne({
             where: { email },
-            attributes: ['id', 'email', 'resetPasswordOtp', 'resetPasswordExpires', 'otpAttempts'],
+            attributes: [
+                'id',
+                'email',
+                'resetPasswordOtp',
+                'resetPasswordExpires',
+                'otpAttempts',
+            ],
         });
     }
     async findUserForVerification(email) {
         return this.userModel.findOne({
             where: { email },
-            attributes: ['id', 'email', 'verificationCode', 'verificationExpires', 'otpAttempts', 'isEmailVerified'],
+            attributes: [
+                'id',
+                'email',
+                'verificationCode',
+                'verificationExpires',
+                'otpAttempts',
+                'isEmailVerified',
+            ],
         });
     }
     async findUserById(id) {
@@ -61,9 +72,6 @@ let AuthProvider = class AuthProvider {
             attributes: [
                 'id',
                 'email',
-                'firstName',
-                'lastName',
-                'phone',
                 'avatar',
                 'role',
                 'isActive',
@@ -119,7 +127,7 @@ let AuthProvider = class AuthProvider {
         await this.userModel.update({ isActive: true }, { where: { id: userId } });
     }
     async updateProfile(userId, profileData) {
-        const allowedFields = ['firstName', 'lastName', 'phone', 'avatar'];
+        const allowedFields = ['avatar'];
         const updateData = Object.keys(profileData)
             .filter((key) => allowedFields.includes(key))
             .reduce((obj, key) => {
@@ -139,6 +147,19 @@ let AuthProvider = class AuthProvider {
             where: { isActive: true },
             limit,
             order: [['createdAt', 'DESC']],
+        });
+    }
+    async deleteAccount(userId, password) {
+        const user = await this.userModel.findByPk(userId);
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            throw new common_1.UnauthorizedException('Wrong password');
+        }
+        await this.userModel.destroy({
+            where: { id: userId },
         });
     }
 };

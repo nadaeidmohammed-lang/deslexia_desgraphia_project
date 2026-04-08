@@ -5,8 +5,6 @@ export declare class User extends Model<User> {
     id: number;
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
     avatar: string;
     role: string;
     isActive: boolean;

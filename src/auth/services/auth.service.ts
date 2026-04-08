@@ -210,4 +210,12 @@ export class AuthService {
       message: 'Password changed successfully',
     };
   }
+
+  async deleteAccount(userId: number, password: string) {
+    await this.authProvider.deleteAccount(userId, password);
+
+    return {
+      message: 'Account deleted permanently',
+    };
+  }
 }

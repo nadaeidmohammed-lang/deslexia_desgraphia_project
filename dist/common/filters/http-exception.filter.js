@@ -21,6 +21,7 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
         let status;
         let message;
         let error;
+        console.log('🔥 FULL ERROR:', exception);
         if (exception instanceof common_1.HttpException) {
             status = exception.getStatus();
             const exceptionResponse = exception.getResponse();
@@ -35,26 +36,14 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
         }
         else if (exception instanceof sequelize_1.DatabaseError) {
             status = common_1.HttpStatus.BAD_REQUEST;
-            message = 'Database operation failed';
-            error = exception.message;
-            if (exception.message && exception.message.includes('Duplicate entry')) {
-                message = 'Resource already exists';
-                status = common_1.HttpStatus.CONFLICT;
-            }
-            else if (exception.message &&
-                exception.message.includes('foreign key constraint')) {
-                message = 'Invalid reference to related resource';
-                status = common_1.HttpStatus.BAD_REQUEST;
-            }
-            else if (exception.message &&
-                exception.message.includes('cannot be null')) {
-                message = 'Required field is missing';
-                status = common_1.HttpStatus.BAD_REQUEST;
-            }
+            message = exception.message;
+            error = exception.name;
+            console.log('🔥 SQL:', exception.parent?.sqlMessage);
+            console.log('🔥 PARAMETERS:', exception.parent);
         }
         else {
             status = common_1.HttpStatus.INTERNAL_SERVER_ERROR;
-            message = 'Internal server error';
+            message = exception instanceof Error ? exception.message : exception;
             error = 'Internal Server Error';
         }
         const errorResponse = {

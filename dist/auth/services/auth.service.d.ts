@@ -46,4 +46,7 @@ export declare class AuthService {
     changePasswordWithOtp(userId: number, dto: ChangePasswordWithOtpDto): Promise<{
         message: string;
     }>;
+    deleteAccount(userId: number, password: string): Promise<{
+        message: string;
+    }>;
 }

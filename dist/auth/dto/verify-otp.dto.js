@@ -17,8 +17,9 @@ class VerifyOtpDto {
 exports.VerifyOtpDto = VerifyOtpDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: 'user@example.com',
+        example: 'user@gmail.com',
         description: 'User email address',
+        required: true,
     }),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
@@ -27,6 +28,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: '1234',
         description: 'OTP code sent to email',
+        required: true,
     }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

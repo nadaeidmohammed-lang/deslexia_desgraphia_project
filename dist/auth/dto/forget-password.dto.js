@@ -17,7 +17,7 @@ class ForgotPasswordDto {
 exports.ForgotPasswordDto = ForgotPasswordDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: 'user@example.com',
+        example: 'user@gmail.com',
         description: 'User email address',
     }),
     (0, class_validator_1.IsEmail)(),
@@ -29,7 +29,7 @@ class ResetPasswordDto {
 exports.ResetPasswordDto = ResetPasswordDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: 'user@example.com',
+        example: 'user@gmail.com',
         description: 'User email address',
     }),
     (0, class_validator_1.IsEmail)(),

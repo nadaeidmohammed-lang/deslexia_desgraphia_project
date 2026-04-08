@@ -20,4 +20,5 @@ export declare class AuthProvider {
     findUsersByRole(role: string): Promise<User[]>;
     countActiveUsers(): Promise<number>;
     findRecentUsers(limit?: number): Promise<User[]>;
+    deleteAccount(userId: number, password: string): Promise<void>;
 }

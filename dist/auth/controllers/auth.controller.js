@@ -23,6 +23,8 @@ const decorators_1 = require("../decorators");
 const forget_password_dto_1 = require("../dto/forget-password.dto");
 const verify_otp_dto_1 = require("../dto/verify-otp.dto");
 const change_password_with_otp_dto_1 = require("../dto/change-password-with-otp.dto");
+const common_2 = require("@nestjs/common");
+const delete_account_dto_1 = require("../dto/delete-account.dto");
 let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
@@ -53,11 +55,15 @@ let AuthController = class AuthController {
     changePasswordWithOtp(user, dto) {
         return this.authService.changePasswordWithOtp(user.userId, dto);
     }
+    deleteAccount(user, body) {
+        return this.authService.deleteAccount(user.userId, body.password);
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.UseGuards)(local_auth_guard_1.LocalAuthGuard),
     (0, common_1.Post)('login'),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiOperation)({ summary: 'User login' }),
     (0, swagger_1.ApiBody)({ type: dto_1.LoginDto }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Login successful' }),
@@ -83,6 +89,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Patch)('password'),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiOperation)({ summary: 'Change current user password' }),
     (0, swagger_1.ApiBody)({ type: dto_1.ChangePasswordDto }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Password updated successfully' }),
@@ -96,6 +103,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('forgot-password'),
     (0, swagger_1.ApiOperation)({ summary: 'Request password reset OTP' }),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiBody)({ type: forget_password_dto_1.ForgotPasswordDto }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'OTP sent successfully' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User email not found' }),
@@ -108,6 +116,7 @@ __decorate([
     (0, common_1.Post)('reset-password'),
     (0, swagger_1.ApiOperation)({ summary: 'Reset password using OTP' }),
     (0, swagger_1.ApiBody)({ type: forget_password_dto_1.ResetPasswordDto }),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Password reset successful' }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid or expired OTP' }),
     __param(0, (0, common_1.Body)()),
@@ -117,7 +126,23 @@ __decorate([
 ], AuthController.prototype, "resetPassword", null);
 __decorate([
     (0, common_1.Post)('verify-otp'),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                email: {
+                    type: 'string',
+                    example: 'test@test.com',
+                },
+                otp: {
+                    type: 'string',
+                    example: '123456',
+                },
+            },
+        },
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Verify email OTP' }),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiBody)({ type: verify_otp_dto_1.VerifyOtpDto }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'OTP verified successfully' }),
     __param(0, (0, common_1.Body)()),
@@ -129,6 +154,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Post)('request-change-password-otp'),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiOperation)({ summary: 'Send OTP to confirm password change' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'OTP sent successfully' }),
     __param(0, (0, decorators_1.CurrentUser)()),
@@ -140,6 +166,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Patch)('change-password-with-otp'),
+    (0, common_2.HttpCode)(200),
     (0, swagger_1.ApiOperation)({ summary: 'Change password after OTP verification' }),
     (0, swagger_1.ApiBody)({ type: change_password_with_otp_dto_1.ChangePasswordWithOtpDto }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Password changed successfully' }),
@@ -149,6 +176,19 @@ __decorate([
     __metadata("design:paramtypes", [Object, change_password_with_otp_dto_1.ChangePasswordWithOtpDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "changePasswordWithOtp", null);
+__decorate([
+    (0, common_1.Delete)('delete-account'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete user account permanently' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Account deleted successfully' }),
+    (0, swagger_1.ApiBody)({ type: delete_account_dto_1.DeleteAccountDto }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, delete_account_dto_1.DeleteAccountDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "deleteAccount", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Authentication'),
     (0, common_1.Controller)('auth'),
